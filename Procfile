@@ -1,1 +1,1 @@
-worker: python spot_cloud_trader.py
+web: python spot_cloud_trader.py
