@@ -1,11 +1,11 @@
 services:
-  - type: worker
+  - type: web
     name: delta-spot-bigplayers-bot
     env: python
     region: singapore
     plan: free
-    buildCommand: ""
+    buildCommand: pip install -r requirements.txt
     startCommand: python spot_cloud_trader.py
     envVars:
       - key: DELTA_BASE_URL
-        value: https://api.india.delta.exchange
+        value: https://cdn-ind.testnet.deltaex.org
