@@ -13,7 +13,7 @@ from email.utils import parsedate_to_datetime
 import sys
 import os
 
-# sys.path handled locally
+sys.path.append(r"C:\Users\om\.gemini\antigravity\scratch")
 
 # --- All 25 Institutional Engines + Predictive AI Forecaster ---
 from luxalgo_smc_engine import LuxAlgoSMC                               # 1 (LuxAlgo SMC)
@@ -48,9 +48,12 @@ from daviddme_kill_switch_guard import DavidDMEKillSwitchGuard          # 29 (Da
 from liquidation_heatmap_engine import LiquidationHeatmapEngine          # 30 (Claude Quantitative Liquidation Heatmap & Whale Magnet)
 from trader_timemachine_engine import TraderTimeMachineEngine            # 31 (TimeMachine Historical Replay Engine)
 
-CONFIG_PATH = r"C:\Users\om\.gemini\antigravity\scratch\trading_config.json"
-STATUS_FILE = r"C:\Users\om\.gemini\antigravity\scratch\bot_live_status.txt"
-TRADE_LOG_FILE = r"C:\Users\om\.gemini\antigravity\scratch\bot_trade_history.log"
+_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(_DIR, "trading_config.json")
+if not os.path.exists(CONFIG_PATH):
+    CONFIG_PATH = r"C:\Users\om\.gemini\antigravity\scratch\trading_config.json"
+STATUS_FILE = os.path.join(_DIR, "bot_live_status.txt")
+TRADE_LOG_FILE = os.path.join(_DIR, "bot_trade_history.log")
 
 with open(CONFIG_PATH, "r", encoding="utf-8") as f:
     _cfg = json.load(f)
