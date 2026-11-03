@@ -9,7 +9,8 @@ Implements Master Rule #6:
 import json
 import os
 
-STATE_FILE = r"C:\Users\om\.gemini\antigravity\scratch\profit_trail_state.json"
+_DIR = os.path.dirname(os.path.abspath(__file__))
+STATE_FILE = os.path.join(_DIR, "profit_trail_state.json")
 
 class HighWatermarkProfitEngine:
     def __init__(self, state_file=STATE_FILE):
