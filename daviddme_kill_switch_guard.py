@@ -10,7 +10,10 @@ import json
 import urllib.request
 import os
 
-CONFIG_PATH = r"C:\Users\om\.gemini\antigravity\scratch\trading_config.json"
+_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(_DIR, "trading_config.json")
+if not os.path.exists(CONFIG_PATH):
+    CONFIG_PATH = r"C:\Users\om\.gemini\antigravity\scratch\trading_config.json"
 
 class DavidDMEKillSwitchGuard:
     def __init__(self, max_allowed_loss_usd=15.0, flash_drop_threshold_pct=1.8):
