@@ -1,0 +1,81 @@
+{
+  "system_name": "Antigravity Master Institutional AI Trading Suite (25-in-1)",
+  "permanent_auto_connect": true,
+  "auto_start_on_boot": true,
+  "target_goal": "20K_MILESTONE_BEFORE_REAL_MONEY",
+  "demo": {
+    "platform": "Delta Exchange Testnet India",
+    "base_url": "https://cdn-ind.testnet.deltaex.org",
+    "email": "jogindersinghpandori054@gmail.com",
+    "user_id": 69968787,
+    "api_key": "EfMq2GXNOJ3Nvp6rwbR5vP57OdDHgN",
+    "api_secret": "Vf44M5CBiTr5NYxdF7iwjvR4xiOyS974eF6pp809zhXxBmFDW7BCbts95Ndb",
+    "status": "active"
+  },
+  "real": {
+    "platform": "Delta Exchange India Live",
+    "base_url": "https://api.india.delta.exchange",
+    "user_id": 39533506,
+    "mcp_server": "mushrooms",
+    "status": "ready_for_diwali",
+    "exact_balance_inr": 145.89,
+    "last_verified_by_user": "2026-11-02"
+  },
+  "active_mode": "SPOT",
+  "live_trading_enabled": true,
+  "safety_status": "ACTIVE_AUTO_TRADING_FOLLOWING_BIG_PLAYERS",
+  "installed_engines": {
+    "01_luxalgo_smc": "luxalgo_smc_engine.py (LuxAlgo Smart Money Concepts - BOS, CHoCH, Order Blocks, FVGs)",
+    "02_algoalpha_channels": "algoalpha_breakout_engine.py (AlgoAlpha Breakout Channels - 50% Candle Body Filter)",
+    "03_algoalpha_targets": "algoalpha_trend_targets.py (AlgoAlpha Trend Targets - Dynamic TP1/TP2/TP3 & SL)",
+    "04_luxalgo_volume_profile": "luxalgo_volume_profile.py (LuxAlgo Volume Profile - Point of Control POC & Value Area)",
+    "05_anchored_vwap": "anchored_vwap_engine.py (Daily 00:00 UTC & Weekly Institutional Anchored VWAP)",
+    "06_harmonic_fibo": "harmonic_fibonacci_engine.py (Harmonic Fib 0.618 Golden Pocket, 0.886 Bat PRZ, PDH/PDL)",
+    "07_luxalgo_elliott_wave": "luxalgo_elliott_wave.py (LuxAlgo Elliott Wave 1-2-3-4-5 Impulse & ABC Waves)",
+    "08_liquidity_sweeps": "liquidity_sweeps_engine.py (ICT Liquidity Sweeps - Buy-Side BSL & Sell-Side SSL Pools)",
+    "09_marketcipher_b": "market_cipher_b_engine.py (MarketCipher B - WaveTrend Green/Red Dots & MFI Money Flow Wave)",
+    "10_ict_dqs_displacement": "ict_displacement_engine.py (ICT Displacement Quality Score DQS 0-100 & Grade A/B/C)",
+    "11_ict_macros_kz": "ict_killzones_engine.py (ICT Kill Zones & :20-:40, :50-:10 Algo Macro Windows)",
+    "12_kurtsmock_rvol": "relative_volume_engine.py (Kurtsmock rVol, Churn Bar Volume & Climax Inflow)",
+    "13_lunqfx_isd_fvg": "ict_fvg_void_engine.py (LunqFX ISD Sequence 3/3, Inducement IDM & Balanced Price Range BPR)",
+    "14_luxalgo_nwe_envelope": "nadaraya_watson_engine.py (LuxAlgo Nadaraya-Watson Envelope - Kernel Regression Bands)",
+    "15_dynamic_sr_heatmap": "dynamic_sr_heatmap.py (Multi-touch Pivot Supply & Demand Confluence Clusters)",
+    "16_delta_funding_oi": "delta_funding_oi_engine.py (Delta Exchange Live 8h Funding Rate Sentiment & OI)",
+    "17_luxalgo_reversal_913": "luxalgo_reversal_engine.py (LuxAlgo TD Setup 9 & Exhaustion Countdown 13 Reversal Signals)",
+    "18_mtf_protected_structure": "mtf_trend_alignment.py (4-Timeframe Protected Key Alignment Score -4 to +4)",
+    "19_lunqfx_order_flow_cvd": "luxalgo_order_flow.py (LunqFX Order Flow - Volume Delta, CVD & Institutional Absorption)",
+    "20_marketcipher_a": "market_cipher_a_engine.py (MarketCipher A - 8-EMA Ribbon & Blood Diamond Warning)",
+    "21_ripster_clouds": "ripster_clouds_engine.py (Ripster EMA Clouds - 34-50 Core Cloud & 5-12 Momentum)",
+    "22_zeiierman_kalman": "zeiierman_kalman_engine.py (Zeiierman Adaptive Kalman Filter Trend Strength Oscillator)",
+    "23_waddah_attar_explosion": "waddah_attar_explosion.py (Waddah Attar Explosion WAE - DeadZone & MACD Breakout)",
+    "24_algoalpha_vfi": "algoalpha_volume_flow_index.py (AlgoAlpha Volume Flow Index VFI - Whale Capital Inflow)",
+    "25_profit_trail_20k": "luxalgo_trailing_profit.py (High-Watermark Profit Lock 'Let Winners Run' & Compounding)",
+    "26_predictive_ai_forecaster": "predictive_forecast_engine.py (Lorentzian ML k-NN, Fourier Spectral Cycle & Monte Carlo 500 Drift Engine)",
+    "27_master_quant_150_indicators": "master_quant_indicators.py (Complete 150 Standard Indicators: RSI, MACD, Stoch, SuperTrend, BB, Keltner, Donchian, Squeeze, Hull MA, MFI, ADX, Aroon, etc.)",
+    "28_vip_commercial_15_algos": "vip_all_in_one_suite.py (15 VIP Paid Proprietary Algos: UT Bot Alerts Pro, HalfTrend Pro, QQE Mod, Schaff Trend Cycle, Chandelier Exit, SSL Hybrid, Fisher Transform, Coral Trend, G-Channel, Market Maker AMD, Squeeze Pro, Trend Magic, VuManChu Cipher B Divergence, Lorentzian Classification ML, TD Sequential Pro)"
+  },
+  "auto_wiring": {
+    "all_engines_permanently_wired": true,
+    "require_manual_connect": false,
+    "daemon_persistent": true
+  },
+  "master_rules": {
+    "target": "20K Target on Demo, then Diwali 1H Real Money Trend Trade",
+    "timeframes": {
+      "macro": "Daily, 4H & 1H (Institutional Trend Direction)",
+      "micro": "15m (Precision Execution & Volume Confirmation)"
+    },
+    "leverage": "2x-3x (Strict Risk Management)",
+    "patience": "Wait 30+ mins, verify 4-5 mins candle, volume & momentum",
+    "no_hanging_orders": true
+  },
+  "spot_portfolio": {
+    "symbol": "BTC_INR",
+    "holding_btc": 1.3e-05,
+    "cash_inr": 43.99,
+    "btc_val_inr": 101.17,
+    "total_portfolio_inr": 145.16,
+    "leverage": "1x (Spot - Zero Liquidation Risk)",
+    "last_updated": "2026-11-02 21:57:03"
+  }
+}
