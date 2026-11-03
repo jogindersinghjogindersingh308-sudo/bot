@@ -1,13 +1,13 @@
 """
 ===================================================================================
-DELTA EXCHANGE 24/7 ALL-IN-ONE AUTONOMOUS CLOUD TRADER
-(FUTURES PERPETUALS + SPOT + BIG PLAYERS SMC)
+DELTA EXCHANGE 24/7 CLOUD AUTO-TRADER (301-SYSTEM SUPREME GRAND MEGAVERSE)
 ===================================================================================
-Executes 24/7 on Cloud (Render / Cloud Worker) with ZERO computer required.
-- Tracks Big Players Footprint across Futures (BTCUSD) & Spot (BTC_INR).
-- Big Players Accumulation (CVD Positive) -> AUTO BUY / LONG (Futures 2x-3x & Spot).
-- Big Players Distribution (CVD Negative / Reversal) -> AUTO SELL / CLOSE / SHORT.
-- Zero Hanging Orders Policy: All pending orders cancelled after every cycle.
+Executes 24/7 on Cloud (Render) with ZERO computer required.
+- Powered by 301 Technical Systems, VIP Algos, Frontier Quants & Titans.
+- Follows Big Players (Order Flow CVD, Whale VFI, Stop-Hunt Sweeps, Wyckoff).
+- Bull Score >= 70% + Whale Accumulation -> AUTO BUY / LONG (Delta Testnet)
+- Bear Score >= 70% + Whale Distribution -> AUTO SELL / SHORT (Delta Testnet)
+- Zero Hanging Orders Policy: Pending orders cleared after execution.
 - Web Dashboard on Port with 1-Click Remote Kill-Switch (/stop & /start).
 ===================================================================================
 """
@@ -23,28 +23,43 @@ import threading
 import urllib.request
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
+# Ensure local directory is in sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
+try:
+    from supreme_universal_algo import SupremeUniversalAlgo
+    _HAS_301_ENGINE = True
+except Exception as e:
+    print(f"Warning: could not import SupremeUniversalAlgo: {e}", flush=True)
+    _HAS_301_ENGINE = False
+
 # 1. Credentials & Configuration
 BASE_URL = os.environ.get("DELTA_BASE_URL", "https://cdn-ind.testnet.deltaex.org")
 API_KEY = os.environ.get("DELTA_API_KEY", "EfMq2GXNOJ3Nvp6rwbR5vP57OdDHgN")
 API_SECRET = os.environ.get("DELTA_API_SECRET", "Vf44M5CBiTr5NYxdF7iwjvR4xiOyS974eF6pp809zhXxBmFDW7BCbts95Ndb")
 
 SYMBOL_FUTURES = "BTCUSD"
-SYMBOL_SPOT = "BTC_INR"
-PRODUCT_ID_FUTURES = 139 # BTCUSD Perp
-PRODUCT_ID_SPOT = 117569 # BTC_INR Spot
+PRODUCT_ID_FUTURES = 139  # BTCUSD Perp
 
 PORT = int(os.environ.get("PORT", 8080))
 
 _bot_lock = threading.Lock()
 _bot_state = {
     "is_trading_active": True,
-    "last_price": 78400.0,
+    "last_price": 77000.0,
+    "total_systems_active": 301,
+    "supreme_verdict": "INITIALIZING 301-SYSTEM ARSENAL...",
+    "big_players_mode": "SCANNING BIG PLAYERS...",
     "last_cvd": 0,
+    "bull_score": 50.0,
+    "bear_score": 50.0,
     "last_action": "HOLD",
-    "last_reason": "Bot Initializing...",
+    "last_reason": "301-System Engine Loading...",
     "trade_history": [],
     "last_cycle_time": "Initializing",
-    "mode": "FUTURES & SPOT ALL-IN-ONE (24/7 AUTONOMOUS)"
+    "mode": "301-SYSTEM SUPREME ARSENAL (BIG PLAYERS TRACKING)"
 }
 
 def log_trade(action, price, reason):
@@ -53,12 +68,12 @@ def log_trade(action, price, reason):
     print(f"⚡ {entry}", flush=True)
     with _bot_lock:
         _bot_state["trade_history"].append(entry)
-        if len(_bot_state["trade_history"]) > 20:
+        if len(_bot_state["trade_history"]) > 25:
             _bot_state["trade_history"].pop(0)
 
 def get_server_timestamp():
     try:
-        req = urllib.request.Request(f"{BASE_URL}/v2/products?limit=1", headers={"User-Agent": "DeltaCloudBot/2.0"})
+        req = urllib.request.Request(f"{BASE_URL}/v2/products?limit=1", headers={"User-Agent": "DeltaCloudBot/301"})
         with urllib.request.urlopen(req, timeout=5) as resp:
             d = resp.headers.get("Date")
             if d:
@@ -81,7 +96,7 @@ def make_signed_request(method, endpoint, payload_dict=None):
         "api-key": API_KEY,
         "signature": sig,
         "timestamp": ts,
-        "User-Agent": "DeltaCloudBot/2.0",
+        "User-Agent": "DeltaCloudBot/301",
         "Content-Type": "application/json"
     }
     url = BASE_URL + endpoint
@@ -93,94 +108,36 @@ def make_signed_request(method, endpoint, payload_dict=None):
     except Exception as e:
         return {"error": str(e)}
 
-def fetch_market_candles(resolution=60, count=40):
-    now = int(time.time())
-    start = now - (count + 10) * resolution * 60
-    url = f"https://api.india.delta.exchange/v2/chart/history?symbol=BTCUSD&resolution={resolution}&from={start}&to={now}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            d = json.loads(resp.read().decode())["result"]
-        candles = []
-        for i in range(len(d.get("t", []))):
-            candles.append({
-                "t": d["t"][i],
-                "o": float(d["o"][i]),
-                "h": float(d["h"][i]),
-                "l": float(d["l"][i]),
-                "c": float(d["c"][i]),
-                "v": float(d.get("v", [0]*len(d["t"]))[i])
-            })
-        return candles
-    except Exception:
-        return []
-
-def execute_all_market_trade(action, price, reason):
-    """Executes trade across Futures & Spot and ensures Zero Hanging Orders."""
-    log_trade(action, price, reason)
+def execute_delta_order(side, price, reason):
     try:
         # Cancel any hanging orders first
         make_signed_request("DELETE", f"/v2/orders/all?product_id={PRODUCT_ID_FUTURES}")
-        make_signed_request("DELETE", f"/v2/orders/all?product_id={PRODUCT_ID_SPOT}")
         
         # Place Market Order on Delta
-        side = "buy" if "BUY" in action else "sell"
         order_payload = {
             "product_id": PRODUCT_ID_FUTURES,
             "size": 1,
-            "side": side,
+            "side": side.lower(),
             "order_type": "market_order"
         }
         res = make_signed_request("POST", "/v2/orders", order_payload)
+        log_trade(f"AUTO-{side.upper()}", price, f"{reason} | Delta Res: {res.get('success', True)}")
         print(f"Delta API Result: {res}", flush=True)
     except Exception as e:
         print(f"Execution Error: {e}", flush=True)
 
-def analyze_market_condition(candles):
-    if not candles or len(candles) < 15:
-        return {"action": "WAIT", "cvd": 0, "reason": "Insufficient candles"}
-        
-    closes = [c["c"] for c in candles]
-    highs = [c["h"] for c in candles]
-    lows = [c["l"] for c in candles]
-    
-    current_price = closes[-1]
-    
-    # Calculate CVD
-    delta_vol = 0
-    for c in candles[-10:]:
-        pct = (c["c"] - c["o"]) / (abs(c["h"] - c["l"]) + 1e-5)
-        delta_vol += c["v"] * pct
-        
-    swing_high = max(highs[-24:])
-    swing_low = min(lows[-24:])
-    eq = (swing_high + swing_low) / 2.0
-    is_discount = current_price < eq
-    is_premium = current_price > eq
-    
-    if delta_vol > 100000 and is_discount:
-        return {
-            "action": "AUTO BUY (FUTURES & SPOT)",
-            "cvd": delta_vol,
-            "reason": f"ਵੱਡੇ ਪਲੇਅਰਾਂ ਦਾ Discount Accumulation! CVD: +{delta_vol:,.0f}"
-        }
-    elif delta_vol < -100000 and is_premium:
-        return {
-            "action": "AUTO SELL (FUTURES & SPOT)",
-            "cvd": delta_vol,
-            "reason": f"ਵੱਡੇ ਪਲੇਅਰਾਂ ਦੀ Premium Distribution! CVD: {delta_vol:,.0f} (ਗੇਮ ਘੁੰਮ ਗਈ)"
-        }
-    else:
-        return {
-            "action": "HOLD",
-            "cvd": delta_vol,
-            "reason": f"ਸਾਈਡਵੇਜ਼ ਰੇਂਜ / ਰਿਟੇਲ ਟਰੈਪ ਤੋਂ ਬਚੋ। CVD: {delta_vol:,.0f}"
-        }
-
 def run_trading_engine_loop():
-    print("🚀 [ALL-IN-ONE CLOUD BOT ACTIVE] Futures + Spot + Options Suite Running 24/7...", flush=True)
-    last_executed = None
-    
+    print("🚀 [301-SYSTEM CLOUD BOT ACTIVE] Initializing Grand Megaverse...", flush=True)
+    supreme_algo = None
+    if _HAS_301_ENGINE:
+        try:
+            supreme_algo = SupremeUniversalAlgo()
+            print("✅ [301-SYSTEM CORE READY] All 301 Quant Titans and Institutional Engines Active!", flush=True)
+        except Exception as e:
+            print(f"❌ [INIT ERROR] {e}", flush=True)
+
+    current_position_side = None
+
     while True:
         try:
             with _bot_lock:
@@ -189,31 +146,64 @@ def run_trading_engine_loop():
             if not active:
                 time.sleep(15)
                 continue
-                
-            candles = fetch_market_candles(60, 36)
-            if candles:
-                current_price = candles[-1]["c"]
-                decision = analyze_market_condition(candles)
-                
+
+            if supreme_algo:
+                # Run full 301-System multi-timeframe analysis
+                analysis = supreme_algo.analyze_market(60)
+                curr_price = float(analysis.get("btc_price", 77000.0))
+                verdict = analysis.get("supreme_verdict", "NEUTRAL")
+                big_players = analysis.get("big_players_mode", "TRACKING")
+                cvd = float(analysis.get("cvd_value", 0.0))
+                bull_score = float(analysis.get("master_bull_score", 50.0))
+                bear_score = float(analysis.get("master_bear_score", 50.0))
+                total_systems = int(analysis.get("total_systems_active", 301))
+
                 with _bot_lock:
-                    _bot_state["last_price"] = current_price
-                    _bot_state["last_cvd"] = decision["cvd"]
-                    _bot_state["last_action"] = decision["action"]
-                    _bot_state["last_reason"] = decision["reason"]
+                    _bot_state["last_price"] = curr_price
+                    _bot_state["supreme_verdict"] = verdict
+                    _bot_state["big_players_mode"] = big_players
+                    _bot_state["last_cvd"] = cvd
+                    _bot_state["bull_score"] = bull_score
+                    _bot_state["bear_score"] = bear_score
+                    _bot_state["total_systems_active"] = total_systems
                     _bot_state["last_cycle_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    
-                action = decision["action"]
-                if "BUY" in action or "SELL" in action:
-                    if action != last_executed:
-                        execute_all_market_trade(action, current_price, decision["reason"])
-                        last_executed = action
-                    
+
+                # STRICT BIG PLAYERS EXECUTION LOGIC
+                # Buy only when Bull Score >= 70% and CVD indicates institutional accumulation
+                if bull_score >= 70.0 and cvd > 0:
+                    action = "AUTO BUY / LONG"
+                    reason = f"301 ਅਲਗੋਜ਼ ਦਾ ਬਹੁਮਤ ({bull_score:.1f}% Bullish) + ਵੱਡੇ ਪਲੇਅਰਾਂ ਦਾ Accumulation! CVD: +{cvd:,.0f}"
+                    with _bot_lock:
+                        _bot_state["last_action"] = action
+                        _bot_state["last_reason"] = reason
+
+                    if current_position_side != "BUY":
+                        execute_delta_order("buy", curr_price, reason)
+                        current_position_side = "BUY"
+
+                # Sell only when Bear Score >= 70% and CVD indicates institutional distribution
+                elif bear_score >= 70.0 and cvd < 0:
+                    action = "AUTO SELL / SHORT"
+                    reason = f"301 ਅਲਗੋਜ਼ ਦਾ ਬਹੁਮਤ ({bear_score:.1f}% Bearish) + ਵੱਡੇ ਪਲੇਅਰਾਂ ਦੀ Distribution! CVD: {cvd:,.0f}"
+                    with _bot_lock:
+                        _bot_state["last_action"] = action
+                        _bot_state["last_reason"] = reason
+
+                    if current_position_side != "SELL":
+                        execute_delta_order("sell", curr_price, reason)
+                        current_position_side = "SELL"
+
+                else:
+                    action = "HOLD (ਧੀਰਜ ਰੱਖੋ)"
+                    reason = f"ਮਾਰਕਿਟ ਸਾਈਡਵੇਜ਼ ਰੇਂਜ / ਰਿਟੇਲ ਟਰੈਪ ਹੈ (Bull: {bull_score:.1f}% | Bear: {bear_score:.1f}%). ਵੱਡੇ ਪਲੇਅਰਾਂ ਦੀ ਪੱਕੀ ਮੂਵ ਦੀ ਉਡੀਕ."
+                    with _bot_lock:
+                        _bot_state["last_action"] = action
+                        _bot_state["last_reason"] = reason
+
+            time.sleep(60)
         except Exception as e:
-            print(f"⚠️ Engine Error: {e}", flush=True)
+            print(f"Loop Exception: {e}", flush=True)
             time.sleep(15)
-            continue
-            
-        time.sleep(45)
 
 class CloudBotWebHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
@@ -246,14 +236,17 @@ class CloudBotWebHandler(BaseHTTPRequestHandler):
             
         status_badge = "<span style='color: lime;'>● ਚਾਲੂ ਹੈ (ACTIVE 24/7)</span>" if state["is_trading_active"] else "<span style='color: red;'>■ ਰੁਕਿਆ ਹੋਇਆ ਹੈ (PAUSED)</span>"
         action_color = "lime" if "BUY" in state["last_action"] else ("red" if "SELL" in state["last_action"] else "orange")
-        history_html = "".join(f"<li>{h}</li>" for h in reversed(state["trade_history"])) or "<li>ਸਿਸਟਮ ਤਿਆਰ ਹੈ - ਪਹਿਲੀ ਟਰੇਡ ਦੀ ਉਡੀਕ</li>"
+        history_html = "".join(f"<li>{h}</li>" for h in reversed(state["trade_history"])) or "<li>301 ਸਿਸਟਮ ਤਿਆਰ ਹਨ - ਵੱਡੇ ਪਲੇਅਰਾਂ ਦੀ ਪੱਕੀ ਮੂਵ ਦੀ ਉਡੀਕ</li>"
         
+        bull_pct = state['bull_score']
+        bear_pct = state['bear_score']
+
         html = f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Delta 24/7 All-in-One Cloud Auto-Trader</title>
+    <title>Delta 24/7 Cloud Auto-Trader (301 Systems)</title>
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0f19; color: #fff; padding: 20px; }}
         .card {{ background: #151c2c; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #2d3748; }}
@@ -261,16 +254,29 @@ class CloudBotWebHandler(BaseHTTPRequestHandler):
         .btn-danger {{ background: #ef4444; color: white; }}
         .btn-success {{ background: #10b981; color: white; }}
         .metric {{ font-size: 32px; font-weight: bold; color: #38bdf8; }}
+        .badge {{ background: #1e293b; padding: 4px 10px; border-radius: 6px; border: 1px solid #475569; font-weight: bold; }}
+        .bar-container {{ width: 100%; background: #334155; border-radius: 8px; overflow: hidden; height: 24px; display: flex; margin: 10px 0; }}
+        .bar-bull {{ background: #10b981; text-align: center; font-weight: bold; font-size: 13px; line-height: 24px; color: #000; width: {bull_pct}%; }}
+        .bar-bear {{ background: #ef4444; text-align: center; font-weight: bold; font-size: 13px; line-height: 24px; color: #fff; width: {bear_pct}%; }}
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>⚡ DELTA 24/7 ALL-IN-ONE CLOUD AUTO-TRADER</h2>
-        <p>ਸਿਸਟਮ: <strong>Futures (Perp) + Spot + Options Big Players Suite</strong></p>
-        <p>ਸਟੇਟਸ: {status_badge} | ਆਖਰੀ ਚੈੱਕ: {state['last_cycle_time']}</p>
+        <h2>⚡ DELTA 24/7 CLOUD AUTO-TRADER (301-SYSTEM SUPREME)</h2>
+        <p>ਕੁੱਲ ਸਰਗਰਮ ਸਿਸਟਮ: <span class="badge" style="color: #facc15;">301 SYSTEMS ACTIVE</span> | ਸਟੇਟਸ: {status_badge}</p>
+        <p>ਆਖਰੀ ਚੈੱਕ: <strong>{state['last_cycle_time']}</strong> | ਵੱਡੇ ਪਲੇਅਰਾਂ ਦਾ ਮੋਡ: <strong style="color: #a78bfa;">{state['big_players_mode']}</strong></p>
         <p>ਬਿਟਕੋਇਨ ਲਾਈਵ ਭਾਅ: <span class="metric">${state['last_price']:,.1f}</span></p>
         <p>ਵੱਡੇ ਪਲੇਅਰਾਂ ਦਾ CVD: <strong>{state['last_cvd']:,.0f} contracts</strong></p>
-        <p>ਮੌਜੂਦਾ ਹੁਕਮ: <strong style="color: {action_color}; font-size: 22px;">{state['last_action']}</strong> ({state['last_reason']})</p>
+        
+        <p><strong>301 ਸਿਸਟਮਾਂ ਦੀ ਸਾਂਝੀ ਵੋਟਿੰਗ (Consensus):</strong></p>
+        <div class="bar-container">
+            <div class="bar-bull">Bull: {bull_pct:.1f}%</div>
+            <div class="bar-bear">Bear: {bear_pct:.1f}%</div>
+        </div>
+        
+        <p>ਸੁਪਰੀਮ ਫੈਸਲਾ: <strong style="font-size: 18px;">{state['supreme_verdict']}</strong></p>
+        <p>ਮੌਜੂਦਾ ਹੁਕਮ: <strong style="color: {action_color}; font-size: 22px;">{state['last_action']}</strong></p>
+        <p style="color: #94a3b8; font-style: italic;">{state['last_reason']}</p>
     </div>
 
     <div class="card">
@@ -295,7 +301,7 @@ def main():
     t = threading.Thread(target=run_trading_engine_loop, daemon=True)
     t.start()
     server = ThreadingHTTPServer(("0.0.0.0", PORT), CloudBotWebHandler)
-    print(f"🌐 [ALL-IN-ONE CLOUD SERVER READY] Listening on 0.0.0.0:{PORT}...", flush=True)
+    print(f"🌐 [301-SYSTEM CLOUD SERVER READY] Listening on 0.0.0.0:{PORT}...", flush=True)
     server.serve_forever()
 
 if __name__ == "__main__":
